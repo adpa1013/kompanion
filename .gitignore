@@ -43,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+local.properties
+
+# direnv
+.direnv
