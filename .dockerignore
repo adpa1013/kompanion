@@ -1,0 +1,15 @@
+.git
+.github
+.idea
+.dart_tool
+.android
+.devenv
+.flutter-plugins-dependencies
+build
+android
+ios
+linux
+macos
+windows
+Dockerfile
+docker-compose*.yml
