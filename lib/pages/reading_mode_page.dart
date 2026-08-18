@@ -1,8 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:pageturner_app/models/remote_action.dart';
 import 'package:pageturner_app/services/koreader_service.dart';
+import 'package:pageturner_app/utils/input_capabilities.dart';
 import 'package:pageturner_app/utils/screen_utils.dart';
+import 'package:pageturner_app/widgets/keyboard_shortcuts.dart';
 
 class ReadingModePage extends StatefulWidget {
   final String ip;
@@ -22,6 +24,7 @@ class _ReadingModePageState extends State<ReadingModePage> {
   bool _showIndicators = true;
   Timer? _indicatorTimer;
   late final KOReaderService _koreaderService;
+  int? _frontLight;
 
   @override
   void initState() {
@@ -70,8 +73,34 @@ class _ReadingModePageState extends State<ReadingModePage> {
     super.dispose();
   }
 
+  Future<void> _runAction(RemoteAction action) async {
+    switch (action) {
+      case RemoteAction.next:
+        await _koreaderService.turnPage(1);
+      case RemoteAction.prev:
+        await _koreaderService.turnPage(-1);
+      case RemoteAction.brightnessUp:
+        await _nudgeFrontLight(KOReaderService.frontLightStep);
+      case RemoteAction.brightnessDown:
+        await _nudgeFrontLight(-KOReaderService.frontLightStep);
+    }
+  }
+
+  Future<void> _nudgeFrontLight(int delta) async {
+    _frontLight =
+        await _koreaderService.adjustFrontLight(delta, from: _frontLight);
+  }
+
   @override
   Widget build(BuildContext context) {
+    return KeyboardShortcuts(
+      enabled: InputCapabilities.arrowKeysEnabled,
+      onAction: _runAction,
+      child: _buildReadingSurface(context),
+    );
+  }
+
+  Widget _buildReadingSurface(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
         await _exitReadingMode();
