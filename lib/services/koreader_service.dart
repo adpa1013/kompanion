@@ -16,6 +16,11 @@ class KOReaderService {
 
   String get baseUrl => 'http://$ip:$port/koreader';
 
+  static const int frontLightMax = 24;
+
+  /// Roughly 10% of the frontlight range.
+  static const int frontLightStep = 2;
+
   /// Generic Command Method
   Future<void> _sendCommand(String command, [String params = '']) async {
     String fullCommand = command;
@@ -70,6 +75,15 @@ class KOReaderService {
 
   Future<void> setFrontLightIntensity(int intensity) async {
     await _sendCommand("SetFlIntensity", intensity.toString());
+  }
+
+  /// Nudges the frontlight by [delta], clamped, and returns the new value.
+  /// Pass [from] to skip the read back if the current value is known.
+  Future<int> adjustFrontLight(int delta, {int? from}) async {
+    final int current = from ?? await getFlIntensity();
+    final int next = (current + delta).clamp(0, frontLightMax);
+    await setFrontLightIntensity(next);
+    return next;
   }
 
   Future<void> setWarmth(int warmth) async {

@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pageturner_app/pages/reading_mode_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/volume_button_action.dart';
+import '../models/input_settings.dart';
+import '../models/remote_action.dart';
 import '../services/koreader_service.dart';
 import '../services/volume_button_service.dart';
+import '../utils/input_capabilities.dart';
+import '../widgets/keyboard_shortcuts.dart';
 import 'connection_page.dart';
 import 'text_editor_page.dart';
 
@@ -28,8 +31,8 @@ class _ControlPageState extends State<ControlPage> {
   late final KOReaderService _koreaderService;
   late final VolumeButtonService _volumeButtonService;
 
-  VolumeButtonAction _volumeUpAction = VolumeButtonAction.next;
-  VolumeButtonAction _volumeDownAction = VolumeButtonAction.prev;
+  RemoteAction _volumeUpAction = RemoteAction.next;
+  RemoteAction _volumeDownAction = RemoteAction.prev;
 
   String _status = "Connected";
 
@@ -59,11 +62,11 @@ class _ControlPageState extends State<ControlPage> {
     );
 
     _volumeButtonService = VolumeButtonService(
-      onVolumeUp: () => _turnPage(_volumeUpAction.command),
-      onVolumeDown: () => _turnPage(_volumeDownAction.command),
+      onVolumeUp: () => _runAction(_volumeUpAction),
+      onVolumeDown: () => _runAction(_volumeDownAction),
     );
 
-    _loadVolumeButtonSettings();
+    _loadInputSettings();
     _loadProfileNames();
 
     Future.delayed(const Duration(milliseconds: 300), () async {
@@ -194,40 +197,39 @@ class _ControlPageState extends State<ControlPage> {
     }
   }
 
-  Future<void> _loadVolumeButtonSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    final upIndex =
-        prefs.getInt('volume_up_action') ?? VolumeButtonAction.next.index;
-    final downIndex =
-        prefs.getInt('volume_down_action') ?? VolumeButtonAction.prev.index;
+  Future<void> _loadInputSettings() async {
+    final settings = await InputSettings.load();
 
+    if (!mounted) return;
     setState(() {
-      _volumeUpAction = VolumeButtonAction.values[upIndex];
-      _volumeDownAction = VolumeButtonAction.values[downIndex];
+      _volumeUpAction = settings.volumeUpAction;
+      _volumeDownAction = settings.volumeDownAction;
     });
   }
 
-  Future<void> _saveVolumeButtonSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('volume_up_action', _volumeUpAction.index);
-    await prefs.setInt('volume_down_action', _volumeDownAction.index);
+  Future<void> _saveInputSettings() async {
+    await InputSettings(
+      volumeUpAction: _volumeUpAction,
+      volumeDownAction: _volumeDownAction,
+    ).save();
   }
 
   void _showSettingsDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        VolumeButtonAction tempVolumeUp = _volumeUpAction;
-        VolumeButtonAction tempVolumeDown = _volumeDownAction;
+        RemoteAction tempVolumeUp = _volumeUpAction;
+        RemoteAction tempVolumeDown = _volumeDownAction;
 
         return StatefulBuilder(
           builder: (context, setDialogState) {
             final isDark = Theme.of(context).brightness == Brightness.dark;
 
             return AlertDialog(
+              scrollable: true,
               backgroundColor: Theme.of(context).colorScheme.surface,
               title: Text(
-                'Volume Button Settings',
+                'Input Settings',
                 style:
                     TextStyle(color: Theme.of(context).colorScheme.onSurface),
               ),
@@ -235,61 +237,83 @@ class _ControlPageState extends State<ControlPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (InputCapabilities.hasVolumeButtons) ...[
+                    Text(
+                      'Volume Up Button',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...RemoteAction.values.map((action) {
+                      return RadioListTile<RemoteAction>(
+                        title: Text(
+                          action.displayName,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface),
+                        ),
+                        value: action,
+                        groupValue: tempVolumeUp,
+                        activeColor: Theme.of(context).colorScheme.onSurface,
+                        onChanged: (RemoteAction? value) {
+                          if (value != null) {
+                            setDialogState(() {
+                              tempVolumeUp = value;
+                            });
+                          }
+                        },
+                      );
+                    }).toList(),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Volume Down Button',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...RemoteAction.values.map((action) {
+                      return RadioListTile<RemoteAction>(
+                        title: Text(
+                          action.displayName,
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface),
+                        ),
+                        value: action,
+                        groupValue: tempVolumeDown,
+                        activeColor: Theme.of(context).colorScheme.onSurface,
+                        onChanged: (RemoteAction? value) {
+                          if (value != null) {
+                            setDialogState(() {
+                              tempVolumeDown = value;
+                            });
+                          }
+                        },
+                      );
+                    }).toList(),
+                    const SizedBox(height: 20),
+                  ],
                   Text(
-                    'Volume Up Button',
+                    'Keyboard',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  ...VolumeButtonAction.values.map((action) {
-                    return RadioListTile<VolumeButtonAction>(
-                      title: Text(
-                        action.displayName,
+                  ..._keyBindings.entries.map((binding) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Text(
+                        '${binding.key}  ${binding.value.displayName}',
                         style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface),
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
-                      value: action,
-                      groupValue: tempVolumeUp,
-                      activeColor: Theme.of(context).colorScheme.onSurface,
-                      onChanged: (VolumeButtonAction? value) {
-                        if (value != null) {
-                          setDialogState(() {
-                            tempVolumeUp = value;
-                          });
-                        }
-                      },
                     );
-                  }).toList(),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Volume Down Button',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ...VolumeButtonAction.values.map((action) {
-                    return RadioListTile<VolumeButtonAction>(
-                      title: Text(
-                        action.displayName,
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface),
-                      ),
-                      value: action,
-                      groupValue: tempVolumeDown,
-                      activeColor: Theme.of(context).colorScheme.onSurface,
-                      onChanged: (VolumeButtonAction? value) {
-                        if (value != null) {
-                          setDialogState(() {
-                            tempVolumeDown = value;
-                          });
-                        }
-                      },
-                    );
-                  }).toList(),
+                  }),
                 ],
               ),
               actions: [
@@ -309,7 +333,7 @@ class _ControlPageState extends State<ControlPage> {
                       _volumeUpAction = tempVolumeUp;
                       _volumeDownAction = tempVolumeDown;
                     });
-                    _saveVolumeButtonSettings();
+                    _saveInputSettings();
                     Navigator.of(context).pop();
 
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -335,8 +359,43 @@ class _ControlPageState extends State<ControlPage> {
     );
   }
 
+  static const Map<String, RemoteAction> _keyBindings = {
+    '\u2190': RemoteAction.prev,
+    '\u2192': RemoteAction.next,
+    '\u2191': RemoteAction.brightnessUp,
+    '\u2193': RemoteAction.brightnessDown,
+    'Page Up': RemoteAction.prev,
+    'Page Down': RemoteAction.next,
+  };
+
   Future<void> _turnPage(int direction) async {
     await _koreaderService.turnPage(direction);
+  }
+
+  Future<void> _runAction(RemoteAction action) async {
+    switch (action) {
+      case RemoteAction.next:
+        await _turnPage(1);
+      case RemoteAction.prev:
+        await _turnPage(-1);
+      case RemoteAction.brightnessUp:
+        await _nudgeFrontLight(KOReaderService.frontLightStep);
+      case RemoteAction.brightnessDown:
+        await _nudgeFrontLight(-KOReaderService.frontLightStep);
+    }
+  }
+
+  Future<void> _nudgeFrontLight(int delta) async {
+    if (isFrontLightDisabled) {
+      await _toggleFrontLight();
+    }
+    final value =
+        await _koreaderService.adjustFrontLight(delta, from: _frontLight);
+    if (mounted) {
+      setState(() {
+        _frontLight = value;
+      });
+    }
   }
 
   Future<void> _toggleFrontLight() async {
@@ -388,6 +447,14 @@ class _ControlPageState extends State<ControlPage> {
 
   @override
   Widget build(BuildContext context) {
+    return KeyboardShortcuts(
+      enabled: InputCapabilities.arrowKeysEnabled,
+      onAction: _runAction,
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -458,7 +525,7 @@ class _ControlPageState extends State<ControlPage> {
               IconButton(
                 icon: const Icon(Icons.settings),
                 onPressed: _showSettingsDialog,
-                tooltip: 'Volume Button Settings',
+                tooltip: 'Input Settings',
               ),
               IconButton(
                 icon: Icon(
@@ -492,7 +559,7 @@ class _ControlPageState extends State<ControlPage> {
                   child: Slider(
                     value: _frontLight.toDouble(),
                     min: 0.0,
-                    max: 24.0,
+                    max: KOReaderService.frontLightMax.toDouble(),
                     inactiveColor: Colors.teal.withValues(alpha: 0.3),
                     onChanged: (double newValue) async {
                       if (isFrontLightDisabled) {
@@ -596,18 +663,28 @@ class _ControlPageState extends State<ControlPage> {
               textAlign: TextAlign.center,
             ),
             Text(
-              'Use the volume buttons to turn pages!',
+              InputCapabilities.pageTurnHint,
               style: Theme.of(context).textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
-            Text(
-              'Vol Up: ${_volumeUpAction.displayName} | Vol Down: ${_volumeDownAction.displayName}',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
+            if (InputCapabilities.hasVolumeButtons)
+              Text(
+                'Vol Up: ${_volumeUpAction.displayName} | Vol Down: ${_volumeDownAction.displayName}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
+            if (InputCapabilities.expectsKeyboard)
+              Text(
+                '\u2190 \u2192 page | \u2191 \u2193 frontlight',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
             const SizedBox(height: 2),
             Row(
               children: [
