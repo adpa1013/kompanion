@@ -15,6 +15,7 @@ jobs:
   build-and-release-apk:
     name: Build & Release APK
     runs-on: ubuntu-latest
+    environment: release
     if: github.event_name != 'workflow_dispatch' || github.ref_protected
 
     steps:
@@ -37,8 +38,26 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Install 1Password CLI
+        uses: 1password/install-cli-action@v1
+
+      - name: Install secretspec
+        run: |
+          curl -sSL https://install.secretspec.dev | sh
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch release keystore from 1Password
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+        run: op read --out-file android/release.jks "op://kompanion/kompanion_app_signing/release.jks"
+
       - name: Build Android APK
-        run: flutter build apk --release
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+        run: |
+          secretspec run --profile ci -- flutter build apk --release \
+            --build-name=${{ github.ref_name }} \
+            --build-number=${{ github.run_number }}
 
       - name: Prepare APK artifact
         run: |
