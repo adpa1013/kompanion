@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pageturner_app/models/remote_action.dart';
+import 'package:kompanion/models/remote_action.dart';
 
 void main() {
   test('persisted indices stay stable for existing installs', () {

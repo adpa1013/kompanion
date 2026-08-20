@@ -1,8 +1,8 @@
 services:
-  pageturner-web:
+  kompanion-web:
     build:
       context: .
-    container_name: pageturner-web
+    container_name: kompanion-web
     ports:
       - "8081:80"
     restart: unless-stopped

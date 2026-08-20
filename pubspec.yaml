@@ -1,5 +1,5 @@
-name: pageturner_app
-description: A Flutter companion app for KoReader PageTurner plugin
+name: kompanion
+description: A Flutter companion app for KOReader
 version: 1.2.2+1
 
 environment:

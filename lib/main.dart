@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
       builder: (context, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'Page Turner App',
+          title: 'Kompanion',
           themeMode: themeService.themeMode,
           theme: ThemeService.lightTheme,
           darkTheme: ThemeService.darkTheme,

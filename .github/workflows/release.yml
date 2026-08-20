@@ -43,13 +43,13 @@ jobs:
       - name: Prepare APK artifact
         run: |
           TAG_NAME="${{ github.ref_name }}"
-          cp build/app/outputs/flutter-apk/app-release.apk koreader_pageturner_companion-${TAG_NAME}.apk
+          cp build/app/outputs/flutter-apk/app-release.apk kompanion-${TAG_NAME}.apk
 
       - name: Create GitHub Release and Upload APK
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            koreader_pageturner_companion-${{ github.ref_name }}.apk
+            kompanion-${{ github.ref_name }}.apk
             build/app/outputs/flutter-apk/app-release.apk
           generate_release_notes: true
         env:

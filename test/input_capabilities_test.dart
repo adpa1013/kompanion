@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pageturner_app/utils/input_capabilities.dart';
+import 'package:kompanion/utils/input_capabilities.dart';
 
 void main() {
   tearDown(() => debugDefaultTargetPlatformOverride = null);

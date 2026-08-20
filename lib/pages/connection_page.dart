@@ -102,7 +102,7 @@ class _ConnectionPageState extends State<ConnectionPage> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Page Turner App',
+                        'Kompanion',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.normal,

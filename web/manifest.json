@@ -1,11 +1,11 @@
 {
-    "name": "koreader_pageturner_companion",
-    "short_name": "koreader_pageturner_companion",
+    "name": "Kompanion",
+    "short_name": "Kompanion",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "A companion app for KOReader.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pageturner_app/models/input_settings.dart';
-import 'package:pageturner_app/models/remote_action.dart';
+import 'package:kompanion/models/input_settings.dart';
+import 'package:kompanion/models/remote_action.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

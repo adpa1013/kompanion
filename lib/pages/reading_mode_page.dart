@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:pageturner_app/models/remote_action.dart';
-import 'package:pageturner_app/services/koreader_service.dart';
-import 'package:pageturner_app/utils/input_capabilities.dart';
-import 'package:pageturner_app/utils/screen_utils.dart';
-import 'package:pageturner_app/widgets/keyboard_shortcuts.dart';
+import 'package:kompanion/models/remote_action.dart';
+import 'package:kompanion/services/koreader_service.dart';
+import 'package:kompanion/utils/input_capabilities.dart';
+import 'package:kompanion/utils/screen_utils.dart';
+import 'package:kompanion/widgets/keyboard_shortcuts.dart';
 
 class ReadingModePage extends StatefulWidget {
   final String ip;

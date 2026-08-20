@@ -1,4 +1,4 @@
-# KOReader Page Turner Companion App 
+# Kompanion - KOReader Companion App 
 
 
 ## Demo
@@ -22,7 +22,7 @@ https://github.com/user-attachments/assets/bd13a4a6-5d70-472a-961a-e4cc17735913
 * Go to releases and Download and install the [latest version](https://github.com/TomasDiLeo/koreader_pageturner_companion/releases/latest)
 * In KOReader go to `Tools -> More Tools -> KOReader HTTP Inspector` and start the HTTP Server (Take note of the port, 8080 by default)
 * In KOReader go to `Settings -> Network -> Network info` and take note of the network and ip
-* In the Page Turner Companion app put the IP and PORT and press "CONNECT"
+* In the Kompanion app put the IP and PORT and press "CONNECT"
 * Enjoy
 
 ## Troubleshooting 

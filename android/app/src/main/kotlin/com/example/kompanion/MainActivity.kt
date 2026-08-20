@@ -1,5 +1,4 @@
-// android/app/src/main/kotlin/com/example/koreader_pageturner_companion/MainActivity.kt
-package com.example.koreader_pageturner_companion
+package com.example.kompanion
 
 import android.view.KeyEvent
 import io.flutter.embedding.android.FlutterActivity

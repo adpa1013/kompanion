@@ -1,7 +1,7 @@
 services:
-  pageturner-web:
-    image: ghcr.io/<owner>/koreader_pageturner_companion:latest
-    container_name: pageturner-web
+  kompanion-web:
+    image: ghcr.io/adpa1013/kompanion:latest
+    container_name: kompanion-web
     ports:
       - "8080:80"
     restart: unless-stopped

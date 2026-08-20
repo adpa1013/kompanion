@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pageturner_app/models/remote_action.dart';
-import 'package:pageturner_app/widgets/keyboard_shortcuts.dart';
+import 'package:kompanion/models/remote_action.dart';
+import 'package:kompanion/widgets/keyboard_shortcuts.dart';
 
 void main() {
   testWidgets('arrow keys win over a focused Slider', (tester) async {
