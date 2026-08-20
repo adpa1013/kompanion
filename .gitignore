@@ -51,5 +51,11 @@ devenv.local.nix
 devenv.local.yaml
 local.properties
 
+# Signing & Keystores
+*.jks
+*.keystore
+*.jkm
+
 # direnv
 .direnv
+

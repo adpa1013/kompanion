@@ -1,8 +1,18 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        load(FileInputStream(keystorePropertiesFile))
+    }
 }
 
 android {
@@ -30,11 +40,43 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            val storeFilePath = System.getenv("KEYSTORE_FILE") 
+                ?: keystoreProperties.getProperty("storeFile") 
+                ?: "release.jks"
+            val resolvedFile = rootProject.file(storeFilePath)
+            val finalStoreFile = if (resolvedFile.exists()) resolvedFile else file(storeFilePath)
+
+            val pass = System.getenv("KEYSTORE_PASSWORD") 
+                ?: System.getenv("STORE_PASSWORD") 
+                ?: keystoreProperties.getProperty("storePassword")
+
+            val alias = System.getenv("KEY_ALIAS") 
+                ?: keystoreProperties.getProperty("keyAlias") 
+                ?: "kompanion"
+
+            val keyPass = System.getenv("KEY_PASSWORD") 
+                ?: keystoreProperties.getProperty("keyPassword") 
+                ?: pass
+
+            if (finalStoreFile.exists() && !pass.isNullOrEmpty()) {
+                storeFile = finalStoreFile
+                storePassword = pass
+                keyAlias = alias
+                keyPassword = keyPass
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            val releaseConfig = signingConfigs.getByName("release")
+            signingConfig = if (releaseConfig.storeFile != null && releaseConfig.storePassword != null) {
+                releaseConfig
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
@@ -42,3 +84,4 @@ android {
 flutter {
     source = "../.."
 }
+
