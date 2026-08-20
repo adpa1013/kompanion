@@ -5,6 +5,8 @@
 
   # Setup
   android.enable = true;
+  android.platforms.version = [ "34" "35" "36" ];
+  android.buildTools.version = [ "35.0.0" "36.0.0" ];
 
   android.flutter.enable = true;
 

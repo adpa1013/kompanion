@@ -1,4 +1,4 @@
-package com.example.kompanion
+package com.adpa1013.kompanion
 
 import android.view.KeyEvent
 import io.flutter.embedding.android.FlutterActivity
