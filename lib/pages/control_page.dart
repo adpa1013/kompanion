@@ -12,14 +12,12 @@ import 'connection_page.dart';
 import 'text_editor_page.dart';
 
 class ControlPage extends StatefulWidget {
-  final String ip;
-  final int port;
+  final String serverUrl;
   final VoidCallback onToggleTheme;
 
   const ControlPage({
     super.key,
-    required this.ip,
-    required this.port,
+    required this.serverUrl,
     required this.onToggleTheme,
   });
 
@@ -50,8 +48,7 @@ class _ControlPageState extends State<ControlPage> {
   void initState() {
     super.initState();
     _koreaderService = KOReaderService(
-      ip: widget.ip,
-      port: widget.port,
+      serverUrl: widget.serverUrl,
       onStatusUpdate: (status) {
         if (mounted) {
           setState(() {
@@ -437,8 +434,7 @@ class _ControlPageState extends State<ControlPage> {
       context,
       MaterialPageRoute(
         builder: (context) => TextEditorPage(
-          ip: widget.ip,
-          port: widget.port,
+          serverUrl: widget.serverUrl,
           onToggleTheme: widget.onToggleTheme,
         ),
       ),
@@ -504,8 +500,7 @@ class _ControlPageState extends State<ControlPage> {
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) => ReadingModePage(
-                        ip: widget.ip,
-                        port: widget.port,
+                        serverUrl: widget.serverUrl,
                       ),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         return FadeTransition(opacity: animation, child: child);

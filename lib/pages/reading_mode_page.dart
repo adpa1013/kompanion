@@ -7,13 +7,11 @@ import 'package:kompanion/utils/screen_utils.dart';
 import 'package:kompanion/widgets/keyboard_shortcuts.dart';
 
 class ReadingModePage extends StatefulWidget {
-  final String ip;
-  final int port;
+  final String serverUrl;
 
   const ReadingModePage({
     super.key,
-    required this.ip,
-    required this.port,
+    required this.serverUrl,
   });
 
   @override
@@ -31,8 +29,7 @@ class _ReadingModePageState extends State<ReadingModePage> {
     super.initState();
 
     _koreaderService = KOReaderService(
-      ip: widget.ip,
-      port: widget.port,
+      serverUrl: widget.serverUrl,
       onStatusUpdate: (status) {},
     );
 

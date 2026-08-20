@@ -12,64 +12,97 @@ class ConnectionPage extends StatefulWidget {
 }
 
 class _ConnectionPageState extends State<ConnectionPage> {
-  final TextEditingController _ipController = TextEditingController();
-  final TextEditingController _portController = TextEditingController();
-  String _status = 'Enter KOReader device IP address';
-  String _lastIpHint = '192.168.1.100';
+  final TextEditingController _addressController = TextEditingController();
+  String _status = 'Enter KOReader device address';
+  String _lastAddressHint = '192.168.1.100:8080';
 
   @override
   void initState() {
     super.initState();
-    _portController.text = '8080';
-    _loadLastIp();
+    _loadLastAddress();
   }
 
-  Future<void> _loadLastIp() async {
+  Future<void> _loadLastAddress() async {
     final prefs = await SharedPreferences.getInstance();
-    final lastIp = prefs.getString('last_ip');
+    final lastAddress = prefs.getString('last_ip');
     setState(() {
-      if (lastIp != null && lastIp.isNotEmpty) {
-        _lastIpHint = lastIp;
-        _ipController.text = lastIp;
+      if (lastAddress != null && lastAddress.isNotEmpty) {
+        _lastAddressHint = lastAddress;
+        _addressController.text = lastAddress;
       } else {
-        _ipController.text = _lastIpHint;
+        _addressController.text = _lastAddressHint;
       }
     });
   }
 
-  Future<void> _saveLastIp(String ip) async {
+  Future<void> _saveLastAddress(String address) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('last_ip', ip);
+    await prefs.setString('last_ip', address);
+  }
+
+  /// Accepts either `host`, `host:port`, or a full `http(s)://host[:port]` URL
+  /// and normalizes it to a bare `scheme://host[:port]` server URL.
+  /// Returns null if the input can't be parsed into one.
+  String? _normalizeAddress(String input) {
+    if (input.contains('://')) {
+      final uri = Uri.tryParse(input);
+      if (uri == null ||
+          uri.host.isEmpty ||
+          (uri.scheme != 'http' && uri.scheme != 'https')) {
+        return null;
+      }
+      return Uri(
+        scheme: uri.scheme,
+        host: uri.host,
+        port: uri.hasPort ? uri.port : null,
+      ).toString();
+    }
+
+    final parts = input.split(':');
+    final host = parts[0];
+    if (host.isEmpty || parts.length > 2) {
+      return null;
+    }
+
+    int port = 8080;
+    if (parts.length == 2) {
+      final parsedPort = int.tryParse(parts[1]);
+      if (parsedPort == null || parsedPort < 1 || parsedPort > 65535) {
+        return null;
+      }
+      port = parsedPort;
+    }
+
+    return Uri(scheme: 'http', host: host, port: port).toString();
   }
 
   void _connect() async {
-    final ip = _ipController.text.trim();
-    final portStr = _portController.text.trim();
+    final input = _addressController.text.trim();
 
-    if (ip.isEmpty) {
+    if (input.isEmpty) {
       setState(() {
-        _status = 'Please enter an IP address';
+        _status = 'Please enter a device address';
       });
       return;
     }
 
-    final port = int.tryParse(portStr);
-    if (port == null || port < 1 || port > 65535) {
+    final serverUrl = _normalizeAddress(input);
+    if (serverUrl == null) {
       setState(() {
-        _status = 'Please enter a valid port (1-65535)';
+        _status =
+            'Please enter a valid address, e.g. 192.168.1.100:8080 or https://example.com';
       });
       return;
     }
 
-    await _saveLastIp(ip);
+    await _saveLastAddress(input);
 
     if (mounted) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => ControlPage(
-            ip: ip,
-            port: port,
+            serverUrl: serverUrl,
             onToggleTheme: widget.onToggleTheme,
           ),
         ),
@@ -115,30 +148,20 @@ class _ConnectionPageState extends State<ConnectionPage> {
                   ),
                   const SizedBox(height: 40),
                   TextField(
-                    controller: _ipController,
+                    controller: _addressController,
                     decoration: InputDecoration(
-                      labelText: 'KOReader device IP Address',
+                      labelText: 'KOReader device address',
                       border: const OutlineInputBorder(),
-                      hintText: _lastIpHint,
+                      hintText: _lastAddressHint,
                       prefixIcon: const Icon(Icons.device_hub),
                     ),
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.url,
                     enabled: true,
                   ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: _portController,
-                    decoration: const InputDecoration(
-                      labelText: 'Port',
-                      border: OutlineInputBorder(),
-                      hintText: '8080',
-                      prefixIcon: Icon(Icons.settings_ethernet),
-                    ),
-                    keyboardType: TextInputType.number,
-                    enabled: true,
-                  ),
+                  const SizedBox(height: 8),
                   Text(
-                    'Default port is 8080 unless changed in the HTTP Inspector settings on KOReader.',
+                    'Enter a LAN address like 192.168.1.100:8080 (default port 8080), '
+                    'or a full https:// URL if KOReader is behind a reverse proxy.',
                     style: TextStyle(
                       fontSize: 12,
                       color: isDark ? Colors.grey[400] : Colors.grey,
@@ -207,8 +230,7 @@ class _ConnectionPageState extends State<ConnectionPage> {
 
   @override
   void dispose() {
-    _ipController.dispose();
-    _portController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 }

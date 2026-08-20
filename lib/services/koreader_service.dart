@@ -4,17 +4,17 @@ import 'package:flutter/foundation.dart';
 
 /// Service for communicating with KOReader HTTP Inspector API
 class KOReaderService {
-  final String ip;
-  final int port;
+  /// Scheme + host + optional port, e.g. `http://192.168.1.100:8080`
+  /// or `https://example.com`. No trailing slash or path.
+  final String serverUrl;
   final Function(String)? onStatusUpdate;
 
   KOReaderService({
-    required this.ip,
-    required this.port,
+    required this.serverUrl,
     this.onStatusUpdate,
   });
 
-  String get baseUrl => 'http://$ip:$port/koreader';
+  String get baseUrl => '$serverUrl/koreader';
 
   static const int frontLightMax = 24;
 
@@ -30,11 +30,11 @@ class KOReaderService {
 
     final uri = Uri.parse('$baseUrl/event/$fullCommand');
 
-    _updateStatus('Sending command to $ip...');
+    _updateStatus('Sending command...');
 
     try {
       await http.get(uri);
-      _updateStatus('Command sent to $ip');
+      _updateStatus('Command sent');
     } catch (e) {
       debugPrint('HTTP error: $e');
       _updateStatus('Error: No Device Found');

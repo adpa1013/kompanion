@@ -3,14 +3,12 @@ import 'package:flutter_svg/svg.dart';
 import '../services/koreader_service.dart';
 
 class TextEditorPage extends StatefulWidget {
-  final String ip;
-  final int port;
+  final String serverUrl;
   final VoidCallback onToggleTheme;
 
   const TextEditorPage({
     super.key,
-    required this.ip,
-    required this.port,
+    required this.serverUrl,
     required this.onToggleTheme,
   });
 
@@ -28,8 +26,7 @@ class _TextEditorPageState extends State<TextEditorPage> {
   void initState() {
     super.initState();
     _koreaderService = KOReaderService(
-      ip: widget.ip,
-      port: widget.port,
+      serverUrl: widget.serverUrl,
       onStatusUpdate: (status) {
         if (mounted) {
           setState(() {
