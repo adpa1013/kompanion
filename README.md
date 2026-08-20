@@ -19,7 +19,7 @@ https://github.com/user-attachments/assets/bd13a4a6-5d70-472a-961a-e4cc17735913
 
 ## Install
 
-* Go to releases and Download and install the [latest version](https://github.com/TomasDiLeo/koreader_pageturner_companion/releases/latest)
+* Go to releases and Download and install the [latest version](https://github.com/adpa1013/kompanion/releases/latest)
 * In KOReader go to `Tools -> More Tools -> KOReader HTTP Inspector` and start the HTTP Server (Take note of the port, 8080 by default)
 * In KOReader go to `Settings -> Network -> Network info` and take note of the network and ip
 * In the Kompanion app put the IP and PORT and press "CONNECT"
@@ -31,8 +31,3 @@ https://github.com/user-attachments/assets/bd13a4a6-5d70-472a-961a-e4cc17735913
 |-------|---|
 |Profiles don't activate|Make sure the names are written exactly the same way. Check the `Show in action list` checkbox in the profile's settings|
 |Can't connect to the KOReader device| Check the device's IP, they tend to change from time to time. Check that both devices are in the same network. Ensure that the HTTP Inspector plugin is running|
-
-
-----
-### Deprecated
-For the dedicated KOReader plugin + companion go To [Page Turner Plugin](https://github.com/TomasDiLeo/pageturner.koplugin) for more details
