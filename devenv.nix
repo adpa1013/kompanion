@@ -5,14 +5,25 @@
 
   # Setup
   android.enable = true;
-  android.platforms.version = [ "34" "35" "36" ];
-  android.buildTools.version = [ "35.0.0" "36.0.0" ];
+  android.platforms.version = [
+    "34"
+    "35"
+    "36"
+  ];
+  android.buildTools.version = [
+    "35.0.0"
+    "36.0.0"
+  ];
 
   android.flutter.enable = true;
 
   languages.java.enable = true;
 
   languages.java.jdk.package = pkgs.jdk17;
+
+  packages = with pkgs; [
+    apksigner
+  ];
 
   enterShell = ''
     echo "Flutter development environment loaded!"
