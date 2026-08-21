@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kompanion/pages/reading_mode_page.dart';
@@ -44,6 +47,11 @@ class _ControlPageState extends State<ControlPage> {
   // Profile names - support up to 5 profiles
   final List<String> _profileNames = List.filled(5, '', growable: false);
 
+  Timer? _batteryTimer;
+  final ValueNotifier<int?> _batteryNotifier = ValueNotifier(null);
+  final ValueNotifier<List<(DateTime, int)>> _batteryHistoryNotifier =
+      ValueNotifier([]);
+
   @override
   void initState() {
     super.initState();
@@ -69,6 +77,11 @@ class _ControlPageState extends State<ControlPage> {
     Future.delayed(const Duration(milliseconds: 300), () async {
       if (mounted) {
         _loadDisplayLights();
+        _refreshBattery();
+        _batteryTimer = Timer.periodic(
+          const Duration(minutes: 2),
+          (_) => _refreshBattery(),
+        );
       }
 
       if (await _koreaderService.isConnected()) {
@@ -85,9 +98,12 @@ class _ControlPageState extends State<ControlPage> {
 
   @override
   void dispose() {
+    _batteryTimer?.cancel();
     _volumeButtonService.dispose();
     _frontLightNotifier.dispose();
     _warmLightNotifier.dispose();
+    _batteryNotifier.dispose();
+    _batteryHistoryNotifier.dispose();
     super.dispose();
   }
 
@@ -187,11 +203,123 @@ class _ControlPageState extends State<ControlPage> {
   Future<void> _loadDisplayLights() async {
     final frontLight = await _koreaderService.getFlIntensity();
     final warmLight = await _koreaderService.getFlWarmth();
-
     if (mounted) {
       _frontLightNotifier.value = frontLight;
       _warmLightNotifier.value = warmLight;
     }
+  }
+
+  IconData _batteryIcon(int percentage) {
+    if (percentage <= 15) return Icons.battery_alert;
+    if (percentage <= 35) return Icons.battery_2_bar;
+    if (percentage <= 65) return Icons.battery_4_bar;
+    if (percentage <= 90) return Icons.battery_5_bar;
+    return Icons.battery_full;
+  }
+
+  Future<void> _refreshBattery() async {
+    final percentage = await _koreaderService.getBatteryPercentage();
+    if (!mounted) return;
+
+    _batteryNotifier.value = percentage;
+    if (percentage != null) {
+      _batteryHistoryNotifier.value = [
+        ..._batteryHistoryNotifier.value,
+        (DateTime.now(), percentage),
+      ];
+    }
+  }
+
+  void _showBatteryHistoryDialog() {
+    final screenSize = MediaQuery.of(context).size;
+    final dialogWidth = (screenSize.width * 0.8).clamp(250.0, 600.0);
+    final dialogHeight = (screenSize.height * 0.4).clamp(150.0, 400.0);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text(
+          'Battery Drain',
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+        ),
+        content: SizedBox(
+          width: dialogWidth,
+          height: dialogHeight,
+          child: ValueListenableBuilder<List<(DateTime, int)>>(
+            valueListenable: _batteryHistoryNotifier,
+            builder: (context, history, _) {
+              if (history.length < 2) {
+                return Center(
+                  child: Text(
+                    'Collecting data... check back in a couple minutes.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface),
+                  ),
+                );
+              }
+
+              final start = history.first.$1;
+              return LineChart(
+                LineChartData(
+                  minY: 0,
+                  maxY: 100,
+                  titlesData: FlTitlesData(
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 32,
+                        getTitlesWidget: (value, meta) => Text(
+                            '${value.toInt()}%',
+                            style: const TextStyle(fontSize: 10)),
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 24,
+                        getTitlesWidget: (value, meta) => Text(
+                          '${value.toInt()}m',
+                          style: const TextStyle(fontSize: 10),
+                        ),
+                      ),
+                    ),
+                  ),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: [
+                        for (final (time, percentage) in history)
+                          FlSpot(
+                            time.difference(start).inSeconds / 60,
+                            percentage.toDouble(),
+                          ),
+                      ],
+                      dotData: const FlDotData(show: false),
+                      barWidth: 2,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'CLOSE',
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _loadInputSettings() async {
@@ -483,6 +611,30 @@ class _ControlPageState extends State<ControlPage> {
               },
             ),
             actions: [
+              ValueListenableBuilder<int?>(
+                valueListenable: _batteryNotifier,
+                builder: (context, battery, _) => InkWell(
+                  onTap: _showBatteryHistoryDialog,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          battery == null
+                              ? Icons.battery_unknown
+                              : _batteryIcon(battery),
+                          size: 20,
+                        ),
+                        if (battery != null) ...[
+                          const SizedBox(width: 4),
+                          Text('$battery%'),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
               IconButton(
                 icon: const Icon(Icons.auto_stories),
                 onPressed: () {

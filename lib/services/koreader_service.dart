@@ -133,6 +133,24 @@ class KOReaderService {
     }
   }
 
+  Future<int?> getBatteryPercentage() async {
+    try {
+      final uri = Uri.parse(
+        '$baseUrl/device/powerd/getCapacity/',
+      );
+
+      _updateStatus('Fetching Battery Percentage from KOReader...');
+      final response = await http.get(uri);
+      final int? batPercentage =
+          (jsonDecode(response.body.trim()) as List).firstOrNull as int?;
+      debugPrint('Battery Percentage: $batPercentage');
+      return batPercentage;
+    } catch (e) {
+      _updateStatus("Error: Can't fetch battery percentage");
+      return null;
+    }
+  }
+
   //Input Text Methods
 
   Future<String?> getText() async {
@@ -157,7 +175,8 @@ class KOReaderService {
       }
     } catch (e) {
       debugPrint('Error fetching text: $e');
-      _updateStatus("Error Fetching the text. Make sure there is an Input Box opened");
+      _updateStatus(
+          "Error Fetching the text. Make sure there is an Input Box opened");
       return null;
     }
   }
@@ -171,7 +190,8 @@ class KOReaderService {
       _updateStatus('Text cleared');
     } catch (e) {
       debugPrint('Error clearing text: $e');
-      _updateStatus("Error clearing the text. Make sure there is an Input Box opened");
+      _updateStatus(
+          "Error clearing the text. Make sure there is an Input Box opened");
     }
   }
 
@@ -184,7 +204,8 @@ class KOReaderService {
       await http.get(uri);
     } catch (e) {
       debugPrint('Error adding chars: $e');
-      _updateStatus('Error writtin to KoReader. Make sure there is an Input Box opened');
+      _updateStatus(
+          'Error writtin to KoReader. Make sure there is an Input Box opened');
     }
   }
 
@@ -207,7 +228,8 @@ class KOReaderService {
       _updateStatus('Text sent successfully');
     } catch (e) {
       debugPrint('Error sending text: $e');
-      _updateStatus('Error Sending text to KoReader. Make sure there is an Input Box opened');
+      _updateStatus(
+          'Error Sending text to KoReader. Make sure there is an Input Box opened');
     }
   }
 
@@ -220,10 +242,10 @@ class KOReaderService {
       );
 
       final response = await http.get(uri);
-      if(response.body != ""){
+      if (response.body != "") {
         return true;
-      }else{
-        throw("No body");
+      } else {
+        throw ("No body");
       }
     } catch (e) {
       _updateStatus('No Device Found');
