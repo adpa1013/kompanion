@@ -1,0 +1,30 @@
+Kompanion is a remote control companion app for KOReader. It connects over your
+local network to the HTTP Inspector plugin built into KOReader, letting you
+control your e-reader from your phone.
+
+Features:
+
+* Frontlight intensity and warmth control
+* Night mode toggle
+* Full screen refresh
+* Five custom profile buttons that activate one of your KOReader profiles
+* Page turning with the volume buttons, with remapping capabilities
+* Navigate back and forward between followed links, with a custom "back" button
+* Text input screen to get, send, and clear text inside any input widget in
+  KOReader, useful for writing notes from the comfort of your phone
+* Reading mode: an immersive mode with minimal UI and minimal brightness
+* Keyboard shortcuts: common keyboards are supported, so you can use this app
+  as a "bridge" for most PowerPoint presenter sticks
+* Battery information: fetches the current battery capacity and creates a
+  graph for the current session
+
+Setup:
+
+1. Install and open KOReader on your e-reader
+2. Go to Tools -> More Tools -> KOReader HTTP Inspector and start the HTTP
+   server (note the port, 8080 by default)
+3. Go to Settings -> Network -> Network info and note the device's IP address
+4. In Kompanion, enter the IP and port and press "Connect"
+
+This app requires KOReader's HTTP Inspector plugin to be running on the same
+local network; it does not talk to any server outside your network.

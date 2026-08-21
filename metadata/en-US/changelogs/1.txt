@@ -1,0 +1,1 @@
+Initial F-Droid release, matching app version 1.4.1.

@@ -1,0 +1,31 @@
+Categories:
+  - Reading
+License: GPL-3.0-only
+AuthorName: adpa1013
+WebSite: https://github.com/adpa1013/kompanion
+SourceCode: https://github.com/adpa1013/kompanion
+IssueTracker: https://github.com/adpa1013/kompanion/issues
+Changelog: https://github.com/adpa1013/kompanion/releases
+
+AutoName: Kompanion
+
+RepoType: git
+Repo: https://github.com/adpa1013/kompanion.git
+
+# Starting point, not a verified F-Droid submission yet.
+Builds:
+  - versionName: '1.4.1'
+    versionCode: 1
+    commit: v1.4.1
+    subdir: .
+    srclibs:
+      - flutter@stable
+    build:
+      - $$flutter$$/bin/flutter pub get
+      - $$flutter$$/bin/flutter build apk --release
+    output: build/app/outputs/flutter-apk/app-release.apk
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: '1.4.1'
+CurrentVersionCode: 1

@@ -1,5 +1,7 @@
 # Kompanion - KOReader Companion App 
 
+> **Disclaimer:** this project is a fork of [TomasDiLeo's](https://github.com/TomasDiLeo/) [koreader-pageturner-companion](https://github.com/TomasDiLeo/koreader_pageturner_companion). Originally intended to merge to upstream, but now actively maintained and distributed here,
+  as the original author no longer has time to maintain it. 
 
 ## Demo
 
@@ -15,7 +17,30 @@ https://github.com/user-attachments/assets/bd13a4a6-5d70-472a-961a-e4cc17735913
  - Navigate back and forward between pressed links, and a custom 'back' button
  - Text Input screen capable of getting, sending and clearing any text inside an input text widget in KOReader, especially useful to write notes from the comfort of your phone screen.
  - Reading Mode: immersive reading mode with minimal UI and minimal brightness. Contribution by [pleguen](https://github.com/pleguen)
+ - Keyboard Shortcuts: Common keyboards are supported, so you can use this app as a 'bridge' for most PowerPoint presenter sticks.
+ - Host it yourself: Docker image available, see [docker-compose.example.yml](./docker-compose.example.yml) for reference
+ - Battery Information: Fetches current battery capacity and creates a graph for the current session
 
+
+## Shortcuts
+
+### Keyboard & Remote Controls
+
+| Key / Shortcut | Action |
+|---|---|
+| `←` (Left Arrow) | Previous Page |
+| `→` (Right Arrow) | Next Page |
+| `↑` (Up Arrow) | Frontlight +10% |
+| `↓` (Down Arrow) | Frontlight -10% |
+| `Page Up` | Previous Page |
+| `Page Down` | Next Page |
+
+### Volume Buttons (Android)
+
+| Button | Default Action | Configurable Actions |
+|---|---|---|
+| Volume Up | Next Page | Next Page, Previous Page, Frontlight +10%, Frontlight -10% |
+| Volume Down | Previous Page | Next Page, Previous Page, Frontlight +10%, Frontlight -10% |
 
 ## Install
 

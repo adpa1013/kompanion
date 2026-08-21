@@ -23,6 +23,8 @@
 
   packages = with pkgs; [
     apksigner
+    fdroidcl
+    fdroidserver
   ];
 
   enterShell = ''

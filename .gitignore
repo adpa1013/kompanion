@@ -59,3 +59,12 @@ local.properties
 # direnv
 .direnv
 
+# F-Droid local build testing (fdroidserver working dirs + local scaffold)
+/repo/
+/srclibs/
+/metadata/*.yml
+/tmp/
+/unsigned/
+/stats/
+/logs/
+
