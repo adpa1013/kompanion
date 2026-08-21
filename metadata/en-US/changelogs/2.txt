@@ -1,0 +1,1 @@
+Disable AGP dependency metadata embedding, which F-Droid's build scanner rejected as an unrecognized signing block.

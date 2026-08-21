@@ -78,6 +78,14 @@ android {
             }
         }
     }
+
+    // AGP embeds a "Dependency metadata" block (Gradle dependency names/versions,
+    // meant for Play Console) directly into the APK's signing block by default.
+    // F-Droid's scanner rejects any unrecognized signing block, so disable it.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
 }
 
 kotlin {
