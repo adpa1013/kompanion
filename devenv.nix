@@ -25,6 +25,7 @@
     apksigner
     fdroidcl
     fdroidserver
+    unzip
   ];
 
   enterShell = ''

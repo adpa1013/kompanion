@@ -14,9 +14,9 @@ Repo: https://github.com/adpa1013/kompanion.git
 
 # Starting point, not a verified F-Droid submission yet.
 Builds:
-  - versionName: '1.4.1'
+  - versionName: '1.4.2'
     versionCode: 1
-    commit: v1.4.1
+    commit: v1.4.2
     subdir: .
     srclibs:
       - flutter@stable
@@ -27,5 +27,5 @@ Builds:
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: '1.4.1'
+CurrentVersion: '1.4.2'
 CurrentVersionCode: 1

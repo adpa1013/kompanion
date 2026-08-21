@@ -67,8 +67,11 @@ android {
 
     buildTypes {
         release {
-            val releaseConfig = signingConfigs.getByName("release")
-            signingConfig = if (releaseConfig.storeFile != null && releaseConfig.storePassword != null) {
+            // F-Droid's build pipeline strips the signingConfigs block entirely before
+            // building, so "release" may not exist there - findByName instead of
+            // getByName avoids a hard failure in that case.
+            val releaseConfig = signingConfigs.findByName("release")
+            signingConfig = if (releaseConfig?.storeFile != null && releaseConfig.storePassword != null) {
                 releaseConfig
             } else {
                 signingConfigs.getByName("debug")
