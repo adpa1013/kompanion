@@ -34,10 +34,10 @@ class _ControlPageState extends State<ControlPage> {
 
   String _status = "Connected";
 
-  int _frontLight = 0;
+  final ValueNotifier<int> _frontLightNotifier = ValueNotifier(0);
   int _auxFrontLight = 0;
   bool isFrontLightDisabled = false;
-  int _warmLight = 0;
+  final ValueNotifier<int> _warmLightNotifier = ValueNotifier(0);
   int _auxWarmLight = 0;
   bool isWarmLightDisabled = false;
 
@@ -86,6 +86,8 @@ class _ControlPageState extends State<ControlPage> {
   @override
   void dispose() {
     _volumeButtonService.dispose();
+    _frontLightNotifier.dispose();
+    _warmLightNotifier.dispose();
     super.dispose();
   }
 
@@ -187,10 +189,8 @@ class _ControlPageState extends State<ControlPage> {
     final warmLight = await _koreaderService.getFlWarmth();
 
     if (mounted) {
-      setState(() {
-        _frontLight = frontLight;
-        _warmLight = warmLight;
-      });
+      _frontLightNotifier.value = frontLight;
+      _warmLightNotifier.value = warmLight;
     }
   }
 
@@ -386,45 +386,35 @@ class _ControlPageState extends State<ControlPage> {
     if (isFrontLightDisabled) {
       await _toggleFrontLight();
     }
-    final value =
-        await _koreaderService.adjustFrontLight(delta, from: _frontLight);
+    final value = await _koreaderService.adjustFrontLight(delta,
+        from: _frontLightNotifier.value);
     if (mounted) {
-      setState(() {
-        _frontLight = value;
-      });
+      _frontLightNotifier.value = value;
     }
   }
 
   Future<void> _toggleFrontLight() async {
     if (!isFrontLightDisabled) {
-      setState(() {
-        _auxFrontLight = _frontLight;
-        _frontLight = 0;
-      });
+      _auxFrontLight = _frontLightNotifier.value;
+      _frontLightNotifier.value = 0;
       await _koreaderService.toggleFrontlight();
       isFrontLightDisabled = true;
     } else {
-      setState(() {
-        _frontLight = _auxFrontLight;
-      });
-      await _koreaderService.setFrontLightIntensity(_frontLight);
+      _frontLightNotifier.value = _auxFrontLight;
+      await _koreaderService.setFrontLightIntensity(_frontLightNotifier.value);
       isFrontLightDisabled = false;
     }
   }
 
   Future<void> _toggleWarmth() async {
     if (!isWarmLightDisabled) {
-      setState(() {
-        _auxWarmLight = _warmLight;
-        _warmLight = 0;
-      });
+      _auxWarmLight = _warmLightNotifier.value;
+      _warmLightNotifier.value = 0;
       await _koreaderService.setWarmth(0);
       isWarmLightDisabled = true;
     } else {
-      setState(() {
-        _warmLight = _auxWarmLight;
-      });
-      await _koreaderService.setWarmth(_warmLight);
+      _warmLightNotifier.value = _auxWarmLight;
+      await _koreaderService.setWarmth(_warmLightNotifier.value);
       isWarmLightDisabled = false;
     }
   }
@@ -499,14 +489,17 @@ class _ControlPageState extends State<ControlPage> {
                   Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => ReadingModePage(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          ReadingModePage(
                         serverUrl: widget.serverUrl,
                       ),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
                         return FadeTransition(opacity: animation, child: child);
                       },
                       transitionDuration: const Duration(milliseconds: 300),
-                      reverseTransitionDuration: const Duration(milliseconds: 300),
+                      reverseTransitionDuration:
+                          const Duration(milliseconds: 300),
                     ),
                   );
                 },
@@ -540,64 +533,68 @@ class _ControlPageState extends State<ControlPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                IconButton(
-                    onPressed: () async {
-                      await _toggleFrontLight();
-                    },
-                    tooltip: "Toggle Front",
-                    icon: Icon(_frontLight > 0
-                        ? Icons.light_mode
-                        : Icons.light_mode_outlined)),
-                Expanded(
-                  child: Slider(
-                    value: _frontLight.toDouble(),
-                    min: 0.0,
-                    max: KOReaderService.frontLightMax.toDouble(),
-                    inactiveColor: Colors.teal.withValues(alpha: 0.3),
-                    onChanged: (double newValue) async {
-                      if (isFrontLightDisabled) {
+            ValueListenableBuilder<int>(
+              valueListenable: _frontLightNotifier,
+              builder: (context, frontLight, _) => Row(
+                children: [
+                  IconButton(
+                      onPressed: () async {
                         await _toggleFrontLight();
-                      }
-                      await _koreaderService
-                          .setFrontLightIntensity(newValue.toInt());
-                      setState(() {
-                        _frontLight = newValue.toInt();
-                      });
-                    },
+                      },
+                      tooltip: "Toggle Front",
+                      icon: Icon(frontLight > 0
+                          ? Icons.light_mode
+                          : Icons.light_mode_outlined)),
+                  Expanded(
+                    child: Slider(
+                      value: frontLight.toDouble(),
+                      min: 0.0,
+                      max: KOReaderService.frontLightMax.toDouble(),
+                      inactiveColor: Colors.teal.withValues(alpha: 0.3),
+                      onChanged: (double newValue) =>
+                          _frontLightNotifier.value = newValue.toInt(),
+                      onChangeEnd: (double newValue) async {
+                        if (isFrontLightDisabled) {
+                          await _toggleFrontLight();
+                        }
+                        await _koreaderService
+                            .setFrontLightIntensity(newValue.toInt());
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            Row(
-              children: [
-                IconButton(
-                    onPressed: () async {
-                      await _toggleWarmth();
-                    },
-                    tooltip: "Toggle Warmth",
-                    icon: Icon(_warmLight == 0
-                        ? Icons.wb_iridescent_outlined
-                        : Icons.wb_iridescent_rounded)),
-                Expanded(
-                  child: Slider(
-                    value: _warmLight.toDouble(),
-                    min: 0.0,
-                    max: 100.0,
-                    inactiveColor: Colors.teal.withValues(alpha: 0.3),
-                    onChanged: (double newValue) async {
-                      if (isWarmLightDisabled) {
+            ValueListenableBuilder<int>(
+              valueListenable: _warmLightNotifier,
+              builder: (context, warmLight, _) => Row(
+                children: [
+                  IconButton(
+                      onPressed: () async {
                         await _toggleWarmth();
-                      }
-                      await _koreaderService.setWarmth(newValue.toInt());
-                      setState(() {
-                        _warmLight = newValue.toInt();
-                      });
-                    },
+                      },
+                      tooltip: "Toggle Warmth",
+                      icon: Icon(warmLight == 0
+                          ? Icons.wb_iridescent_outlined
+                          : Icons.wb_iridescent_rounded)),
+                  Expanded(
+                    child: Slider(
+                      value: warmLight.toDouble(),
+                      min: 0.0,
+                      max: 100.0,
+                      inactiveColor: Colors.teal.withValues(alpha: 0.3),
+                      onChanged: (double newValue) =>
+                          _warmLightNotifier.value = newValue.toInt(),
+                      onChangeEnd: (double newValue) async {
+                        if (isWarmLightDisabled) {
+                          await _toggleWarmth();
+                        }
+                        await _koreaderService.setWarmth(newValue.toInt());
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const Divider(height: 10, thickness: .2, indent: 50, endIndent: 50),
             Row(
