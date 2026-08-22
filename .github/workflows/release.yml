@@ -50,20 +50,26 @@ jobs:
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
         run: op read --out-file android/release.jks "op://kompanion/kompanion_app_signing/release.jks"
-      - name: Build Android APK
+      - name: Build Android APKs (split per ABI)
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-        run: secretspec run --profile ci -- flutter build apk --release
-      - name: Prepare APK artifact
+        run: secretspec run --profile ci -- flutter build apk --release --split-per-abi
+      - name: Prepare APK artifacts
         run: |
           TAG_NAME="${{ github.ref_name }}"
-          cp build/app/outputs/flutter-apk/app-release.apk kompanion-${TAG_NAME}.apk
-      - name: Create GitHub Release and Upload APK
+          for abi in armeabi-v7a arm64-v8a x86_64; do
+            cp "build/app/outputs/flutter-apk/app-${abi}-release.apk" "kompanion-${TAG_NAME}-${abi}.apk"
+          done
+      - name: Create GitHub Release and Upload APKs
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            kompanion-${{ github.ref_name }}.apk
-            build/app/outputs/flutter-apk/app-release.apk
+            kompanion-${{ github.ref_name }}-armeabi-v7a.apk
+            kompanion-${{ github.ref_name }}-arm64-v8a.apk
+            kompanion-${{ github.ref_name }}-x86_64.apk
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            build/app/outputs/flutter-apk/app-x86_64-release.apk
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
