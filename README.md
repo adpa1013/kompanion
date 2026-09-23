@@ -1,3 +1,6 @@
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/packages/com.adpa1013.kompanion)
 # Kompanion - KOReader Companion App 
 
 > **Disclaimer:** this project is a fork of [TomasDiLeo's](https://github.com/TomasDiLeo/) [koreader-pageturner-companion](https://github.com/TomasDiLeo/koreader_pageturner_companion). Originally intended to merge to upstream, but now actively maintained and distributed here,
