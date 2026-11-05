@@ -1,8 +1,5 @@
 { pkgs, config, ... }:
 {
-  # ENVs
-  env.KEYSTORE_PASSWORD = config.secretspec.secrets.KEYSTORE_PASSWORD or "";
-
   # Setup
   android.enable = true;
   android.platforms.version = [
@@ -29,6 +26,7 @@
   ];
 
   enterShell = ''
+    eval "$(secretspec export)" || true
     echo "Flutter development environment loaded!"
     flutter --version
   '';
