@@ -1,6 +1,6 @@
 name: kompanion
 description: A Flutter companion app for KOReader
-version: 1.4.5+4
+version: 1.4.6+5
 
 environment:
   sdk: ^3.14.0
