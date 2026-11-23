@@ -17,6 +17,9 @@ FROM nginx:alpine
 
 COPY --from=builder /app/build/web /usr/share/nginx/html
 
+# nginx mime.types lacks .mjs -> served as octet-stream, Chrome refuses module scripts
+RUN echo 'types { application/javascript mjs; }' > /etc/nginx/conf.d/mjs.conf
+
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
