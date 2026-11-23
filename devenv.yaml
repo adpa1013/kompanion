@@ -1,6 +1,6 @@
 inputs:
   nixpkgs:
-    url: github:cachix/devenv-nixpkgs/rolling
+    url: github:NixOS/nixpkgs/nixos-unstable
 nixpkgs:
   allow_unfree: true
   android_sdk:
